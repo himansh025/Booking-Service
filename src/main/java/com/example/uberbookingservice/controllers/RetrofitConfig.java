@@ -1,0 +1,32 @@
+package com.example.uberbookingservice.controllers;
+
+import com.example.uberbookingservice.apis.LocationServiceApi;
+import com.netflix.discovery.EurekaClient;
+import okhttp3.OkHttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+@Configuration
+public class RetrofitConfig {
+
+    @Autowired
+    private EurekaClient eurekaClient;
+
+    public String getServiceUrl(String serivceName){
+        return eurekaClient.getNextServerFromEureka(serivceName,false).getHomePageUrl();
+    }
+
+    @Bean
+    public LocationServiceApi locationServiceApi(){
+        return  new Retrofit.Builder()
+                .baseUrl(getServiceUrl("LOCATION"))
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(new OkHttpClient.Builder().build())
+                .build()
+                .create(LocationServiceApi.class);
+    }
+
+}

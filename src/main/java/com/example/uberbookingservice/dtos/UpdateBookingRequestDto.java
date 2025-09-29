@@ -1,5 +1,6 @@
 package com.example.uberbookingservice.dtos;
 
+import com.example.Uber_Entity.models.BookingStatus;
 import lombok.*;
 import java.util.Optional;
 
@@ -10,7 +11,7 @@ import java.util.Optional;
 @Builder
 public class UpdateBookingRequestDto {
 
-    private String status;
+    private BookingStatus status;
     private Optional<Long> driverId;
 
 }
