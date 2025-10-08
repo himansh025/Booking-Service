@@ -26,7 +26,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.1.1'
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 	implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-	implementation 'com.example:Uber-Entity:0.0.3-SNAPSHOT'
+	implementation 'com.example:Uber-Entity:0.0.4-SNAPSHOT'
 
 
 

@@ -10,9 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RideRequestDto {
-    private  Long passengerId;
+public class RideResponseDto {    private  Long passengerId;
     private  Long bookingId;
+    private Long driverId;
     private ExactLocation startLocation;
     private  ExactLocation endLocation;
     private List<Long> driverIds;

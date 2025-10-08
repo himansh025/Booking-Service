@@ -52,7 +52,7 @@ public class BookingServiceImp implements BookingService {
                 .longitude(bookingDetails.getStartLocation().getLongitude())
                 .build();
 
-        processNearbyDriversAsync(nearbyDriverRequestDto,bookingDetails.getPassengerId());
+        processNearbyDriversAsync(nearbyDriverRequestDto, bookingDetails.getPassengerId(), newbooking.getId());
 /*
         ResponseEntity<DriverLocationDto[]> result = restTemplate.postForEntity(LOCATION_SERVICE +"/api/location/nearby/drivers",request,DriverLocationDto[].class);
         if (response.isSuccessful() && response.body() != null) {
@@ -72,7 +72,9 @@ public class BookingServiceImp implements BookingService {
     @Override
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingRequestDto, Long bookingId) {
         Optional<Driver> driver = this.driverRepository.findById(bookingRequestDto.getDriverId().get());
+        if(driver.isPresent() && driver.get().isAvailable()){
         bookingRepository.updateBookingStatusAndDriverById(bookingId, bookingRequestDto.getStatus(), driver.get());
+//        driverRepository.updateStatus("unavailable");
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         return UpdateBookingResponseDto.builder()
                 .bookingId(bookingId)
@@ -81,19 +83,34 @@ public class BookingServiceImp implements BookingService {
                 .build();
 
     }
+        return UpdateBookingResponseDto.builder().build();
+}
 
     @Override
-    public void processNearbyDriversAsync(NearbyDriverRequestDto requestDto, Long passengerId) {
+    public void processNearbyDriversAsync(NearbyDriverRequestDto requestDto, Long passengerId, Long bookingId) {
         Call<DriverLocationDto[]> call = locationServiceApi.getNearbyDrivers(requestDto);
         call.enqueue(new Callback<DriverLocationDto[]>() {
             @Override
             public void onResponse(Call<DriverLocationDto[]> call, Response<DriverLocationDto[]> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                        List<DriverLocationDto> driversLocations = Arrays.asList(response.body());
-                        for (DriverLocationDto driver : driversLocations) {
-                            System.out.println("driver id is " + driver.getDriverId() + "latitude " + driver.getLatitude() + "longitude" + driver.getLongitude());
-                }}
+                    List<DriverLocationDto> driversLocations = Arrays.asList(response.body());
+                    for (DriverLocationDto driver : driversLocations) {
+                        System.out.println("driver id is " + driver.getDriverId() + "latitude " + driver.getLatitude() + "longitude" + driver.getLongitude());
+                    }
+                    try {
+                        raiseRideRequestAsync(RideRequestDto
+                                .builder()
+                                .passengerId(passengerId)
+                                .bookingId(bookingId)
+                                .build());
+                    } catch (Exception e) {
+                        throw new  RuntimeException(e);
+                    }
+                } else {
+                    System.out.println();
+                }
             }
+
             @Override
             public void onFailure(Call<DriverLocationDto[]> call, Throwable throwable) {
                 System.out.println(throwable.getMessage());
